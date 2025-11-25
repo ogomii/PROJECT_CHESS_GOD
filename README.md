@@ -14,7 +14,8 @@ shit out :)
 
 ## Repository layout (suggested)
 
-- `engines/` — engine implementations and UCI shims
+- `engines/` — engine save directory
+- `src/` — egine development
 - `data/` — datasets, preprocessing scripts, and sampling utilities
 - `experiments/` — training configs, logs, and evaluation scripts
 - `tools/` — helpers (position generators, self-play scripts, analysis tools)
