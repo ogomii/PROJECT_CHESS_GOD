@@ -9,6 +9,7 @@ shit out :)
 ## Highlights
 
 - Dataset: Lichess 1M games — https://www.kaggle.com/datasets/aapohermankoskinen/lichess-1-million-chess-games
+- Dataset: NNUE stockfish challange, almost 2 million games — https://www.kaggle.com/competitions/train-your-own-stockfish-nnue/data?select=test.csv
 - Uses JCchess (https://github.com/johncheetham/jcchess) for game UI, PGN handling and testing.
 - Engines communicate via UCI (Universal Chess Interface) — engines here include a UCI translation layer.
 
