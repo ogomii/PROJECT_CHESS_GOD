@@ -2,3 +2,4 @@ jcchess
 engines/stockfish
 data/1_million_chess_games/games_cleaned.csv
 *.csv
+src/__pycache__/
