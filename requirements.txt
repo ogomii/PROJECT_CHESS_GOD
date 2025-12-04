@@ -1,0 +1,4 @@
+pyinstaller==6.17.0
+python-chess==1.999
+PyGObject==3.54.5
+pycairo==1.29.0

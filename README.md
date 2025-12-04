@@ -25,7 +25,11 @@ shit out :)
 
 1. Clone the repo.
 2. Inspect the engine-specific README in `engines/<engine-name>/README.md` for setup details.
-3. Use JCchess to load a UCI-compatible engine (see `engines/README.md`).
+3. Compile an engine with UCI protocol:
+   ```bash
+   pyinstaller --onefile ./main.py
+   ```
+4. Use JCchess to load a UCI-compatible engine (see `engines/README.md`).
 
 ### Example local workflow
 
