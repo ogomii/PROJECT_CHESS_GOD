@@ -14,7 +14,7 @@ import chess
 import chess.polyglot
 import random
 
-from engines.stoic_child.egine import evaluate
+from engines.stoic_child.egine import evaluate, getEngineDescriptor
 
 # ---- Transposition table entry types ----
 EXACT = 0
@@ -190,8 +190,9 @@ def uci_loop():
 
         # parse basic commands
         if line == "uci":
-            print("id name MiniPyEngine")
-            print("id author Your Name")
+            engine_desc = getEngineDescriptor()
+            print(f"id name {engine_desc.name}")
+            print(f"id author {engine_desc.autor}")
             print("uciok")
             sys.stdout.flush()
 

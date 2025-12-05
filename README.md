@@ -27,7 +27,7 @@ shit out :)
 2. Inspect the engine-specific README in `engines/<engine-name>/README.md` for setup details.
 3. Compile an engine with UCI protocol:
    ```bash
-   pyinstaller --onefile ./main.py
+   pyinstaller --onefile ./src/main.py --distpath ./engines/stoic_child/ -n Stoic_Child --specpath ./src/specs/ --workpath ./src/build/
    ```
 4. Use JCchess to load a UCI-compatible engine (see `engines/README.md`).
 

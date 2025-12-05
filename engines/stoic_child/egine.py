@@ -1,7 +1,12 @@
 import chess
 import chess.polyglot
+from tools.common import EngineDescpriptor
 
 # ---- Simple evaluation ----
+
+def getEngineDescriptor():
+    return EngineDescpriptor("Stoic Child", "1.0", "ogomi")
+
 PIECE_VALUES = {
     chess.PAWN: 100,
     chess.KNIGHT: 320,
