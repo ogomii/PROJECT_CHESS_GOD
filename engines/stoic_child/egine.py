@@ -29,6 +29,7 @@ PST = {
 def evaluate(board: chess.Board):
     """Material + tiny PST. Positive means advantage for side to move."""
     score = 0
+    print(f"Board in fen: {board.fen()}")
     # material and pst
     for sq in chess.SQUARES:
         piece = board.piece_at(sq)
