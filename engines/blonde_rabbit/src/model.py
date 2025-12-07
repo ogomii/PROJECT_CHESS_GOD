@@ -1,4 +1,5 @@
 import torch
+from torch import nn
 
 class Config:
     squares_height = 8
@@ -23,7 +24,8 @@ class BlondeRabbit(torch.nn.Module):
     def __init__(self, config):
         super(BlondeRabbit, self).__init__()
         self.config = config
-        self.layer = torch.nn.Linear(config.squares * config.input_classes, config.d_model)
+        # embedding layer to convert (13,) to (d_model,)
+        self.embed = nn.Conv1d(config.input_classes, out_channels=config.d_model, kernel_size=1, stride=1)
 
     def fen_to_tensor(self, fen):
         '''
@@ -49,5 +51,8 @@ class BlondeRabbit(torch.nn.Module):
         return tensor
 
     def forward(self, x):
-        x = self.fen_to_tensor(x)
-        return self.layer(x)
+        N, T, _ = x.shape
+        # make fe_to_tensor for each in batch
+        x = torch.stack([self.fen_to_tensor(fen) for fen in x])
+        x = self.embed(x.T).T # (N, T, C)
+        return x
