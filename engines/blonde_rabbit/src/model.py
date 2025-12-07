@@ -1,14 +1,16 @@
 import torch
 
 class Config:
-    input_classes = 13 # 12 pieces + empty
     squares_height = 8
     squares_width = 8
     squares = 64
+    input_classes = 13 # 12 pieces + empty
     piece_map = { # class 0 reserved for empty square
+        "-": 0,
         'p': 1, 'n': 2, 'b': 3, 'r': 4, 'q': 5, 'k': 6,
         'P': 7, 'N': 8, 'B': 9, 'R': 10, 'Q': 11, 'K': 12
     }
+    d_model = 256  # example output size
 
 class BlondeRabbit(torch.nn.Module):
     '''
@@ -21,7 +23,7 @@ class BlondeRabbit(torch.nn.Module):
     def __init__(self, config):
         super(BlondeRabbit, self).__init__()
         self.config = config
-        self.layer = torch.nn.Linear(config.input_size, config.output_size)
+        self.layer = torch.nn.Linear(config.squares * config.input_classes, config.d_model)
 
     def fen_to_tensor(self, fen):
         '''
@@ -29,22 +31,21 @@ class BlondeRabbit(torch.nn.Module):
         example FEN: r1bqkbnr/p1pppppp/n7/1P6/8/8/1PPPPPPP/RNBQKBNR
         '''
         tensor = torch.zeros((self.config.squares, self.config.input_classes))
-        fen_idx = 0
-        for h in range(self.config.squares_height):
-            for w in range(self.config.squares_width):
-                idx = h * self.config.squares_width + w
-                char = fen[fen_idx]  # considering '/' in FEN
-                fen_idx += 1
-                if char == "/":
-                    continue
-                elif char.isdigit():
-                    for empty_idx in range(int(char)):
-                        tensor[idx + empty_idx] = torch.zeros(self.config.input_classes)
-                    w += int(char) - 1  # adjust width index
+        tensor_idx = 0
+        for char in fen:
+            if char == "/":
+                continue
+            elif char.isdigit():
+                for empty_idx in range(int(char)):
+                    tensor[tensor_idx + empty_idx][self.config.piece_map["-"]] = 1
+                tensor_idx += int(char)  # adjust width index
+            else:
+                piece_type = self.config.piece_map.get(char)
+                if piece_type is not None:
+                    tensor[tensor_idx][piece_type] = 1
+                    tensor_idx += 1
                 else:
-                    piece_type = self.config.piece_map.get(char)
-                    if piece_type is not None:
-                        tensor[idx][piece_type] = 1
+                    raise ValueError(f"Invalid character in FEN: {char}")
         return tensor
 
     def forward(self, x):
