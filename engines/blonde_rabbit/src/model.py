@@ -25,7 +25,7 @@ class BlondeRabbit(torch.nn.Module):
         super(BlondeRabbit, self).__init__()
         self.config = config
         # embedding layer to convert (13,) to (d_model,)
-        self.embed = nn.Conv1d(config.input_classes, out_channels=config.d_model, kernel_size=1, stride=1)
+        self.embed = nn.Linear(self.config.input_classes, self.config.d_model)
 
     def fen_to_tensor(self, fen):
         '''
@@ -54,5 +54,5 @@ class BlondeRabbit(torch.nn.Module):
         N, T, _ = x.shape
         # make fe_to_tensor for each in batch
         x = torch.stack([self.fen_to_tensor(fen) for fen in x])
-        x = self.embed(x.T).T # (N, T, C)
+        x = self.embed(x) # (N, T, d_model)
         return x
