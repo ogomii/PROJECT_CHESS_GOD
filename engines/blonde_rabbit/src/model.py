@@ -28,33 +28,8 @@ class BlondeRabbit(torch.nn.Module):
         self.embed = nn.Linear(self.config.input_classes, self.config.d_model)
         self.out = nn.Linear(self.config.d_model, 1) # regression output
 
-    def fen_to_tensor(self, fen):
-        '''
-        Convert FEN string to tensor representation.
-        example FEN: r1bqkbnr/p1pppppp/n7/1P6/8/8/1PPPPPPP/RNBQKBNR
-        '''
-        tensor = torch.zeros((self.config.squares, self.config.input_classes))
-        tensor_idx = 0
-        for char in fen:
-            if char == "/":
-                continue
-            elif char.isdigit():
-                for empty_idx in range(int(char)):
-                    tensor[tensor_idx + empty_idx][self.config.piece_map["-"]] = 1
-                tensor_idx += int(char)  # adjust width index
-            else:
-                piece_type = self.config.piece_map.get(char)
-                if piece_type is not None:
-                    tensor[tensor_idx][piece_type] = 1
-                    tensor_idx += 1
-                else:
-                    raise ValueError(f"Invalid character in FEN: {char}")
-        return tensor
-
     def forward(self, x):
         N, T, _ = x.shape
-        # make fe_to_tensor for each in batch
-        x = torch.stack([self.fen_to_tensor(fen) for fen in x])
         x = self.embed(x) # (N, T, d_model)
         x = self.out(x)**3 # (N, T, 1)
         return x
