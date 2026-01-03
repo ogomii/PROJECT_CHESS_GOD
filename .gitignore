@@ -5,3 +5,6 @@ data/1_million_chess_games/games_cleaned.csv
 __pycache__
 src/build/
 src/dist/
+*.bin
+*.npy
+runs/
