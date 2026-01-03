@@ -14,7 +14,8 @@ import chess
 import chess.polyglot
 import random
 
-from engines.stoic_child.egine import evaluate, getEngineDescriptor
+# from engines.stoic_child.egine import evaluate, getEngineDescriptor
+from engines.blonde_rabbit.engine import evaluate, getEngineDescriptor
 
 # ---- Transposition table entry types ----
 EXACT = 0

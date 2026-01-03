@@ -5,14 +5,17 @@ from model import BlondeRabbit, Config
 from tools.train_loop import train_loop
 from tools.data import ChessDataset
 from tools.common import TrainingConfig
+import datetime
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 training_config = TrainingConfig(
                     n_epochs=20, 
                     batch_size=160, 
-                    learning_rate=0.01,
-                    loss_fn=torch.nn.MSELoss()
+                    learning_rate=0.001,
+                    loss_fn=torch.nn.MSELoss(),
+                    early_stop=True,
+                    model_save_path=f'engines/blonde_rabbit/weights/blonde_rabbit_{datetime.datetime.now().strftime("%Y%m%d_%H%M%S")}.pth'
                     )
 
 print("Loading testset...")

@@ -12,12 +12,16 @@ class TrainingConfig:
                 n_epochs=5, 
                 batch_size=16, 
                 learning_rate=0.01, 
-                loss_fn=torch.nn.MSELoss()
+                loss_fn=torch.nn.MSELoss(),
+                early_stop=True,
+                model_save_path='model.pth'
                 ):
         self.n_epochs: int = n_epochs
         self.batch_size: int = batch_size
         self.learning_rate: float = learning_rate
         self.loss_fn = loss_fn 
+        self.early_stop: bool = early_stop
+        self.model_save_path: str = model_save_path
 
     def __str__(self):
         return f"TrainingConfig(n_epochs={self.n_epochs}, batch_size={self.batch_size}, learning_rate={self.learning_rate}, loss_fn={self.loss_fn})"

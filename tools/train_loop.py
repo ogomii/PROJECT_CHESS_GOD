@@ -1,6 +1,10 @@
 import torch
 import torch.nn.functional as F
 
+def save_model(model, path):
+    print(f"Saving model to {path}...")
+    torch.save(model.state_dict(), path)
+
 def train_loop(model, training_config, trainloader, testloader, optim, device, writer):
     print(training_config)
     print(f"optim: {optim}")
@@ -53,11 +57,10 @@ def train_loop(model, training_config, trainloader, testloader, optim, device, w
             model.train()
         
         # early stopping
-        if epoch > 5:
+        if training_config.early_stop and epoch > 5:
             if min(epoch_loss_avg_arr[-5:-3]) < (epoch_loss_avg + 0.01):
                 print(f"Early stopping on epoch {epoch} due to current loss_avg: {epoch_loss_avg} compared to last 4: {epoch_loss_avg_arr[-5:-1]}")
                 break
-        
     writer.close()
 
     def check_accuracy(model, dataloader, acc_type='test'):
@@ -75,3 +78,4 @@ def train_loop(model, training_config, trainloader, testloader, optim, device, w
 
     check_accuracy(model, trainloader, 'train')
     check_accuracy(model, testloader, 'test')
+    save_model(model, training_config.model_save_path)
