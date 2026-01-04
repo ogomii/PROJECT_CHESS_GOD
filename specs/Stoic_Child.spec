@@ -3,14 +3,14 @@
 
 a = Analysis(
     ['../main.py'],
-    pathex=[],
+    pathex=['/home/ogomi/projects/projectChessGod'],
     binaries=[],
     datas=[],
-    hiddenimports=[],
+    hiddenimports=['engines.stoic_child.egine', 'tools.common'],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
-    excludes=[],
+    excludes=['torch'],
     noarchive=False,
     optimize=0,
 )

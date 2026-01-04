@@ -12,7 +12,7 @@ class TrainingConfig:
                 n_epochs=5, 
                 batch_size=16, 
                 learning_rate=0.01, 
-                loss_fn=torch.nn.MSELoss(),
+                loss_fn=None,
                 early_stop=True,
                 model_save_path='model.pth'
                 ):

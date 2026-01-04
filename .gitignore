@@ -3,9 +3,8 @@ engines/stockfish
 data/1_million_chess_games/games_cleaned.csv
 *.csv
 __pycache__
-src/build/
-src/specs/
-src/dist/
+build/
+dist/
 *.bin
 *.npy
 runs/
