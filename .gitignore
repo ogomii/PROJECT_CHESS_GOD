@@ -8,5 +8,6 @@ dist/
 *.bin
 *.npy
 runs/
-weights/*
+engines/stoic_child/Stoic_Child*
+engines/*/weights/*
 engines/blonde_rabbit/Blonde_Rabbit*
