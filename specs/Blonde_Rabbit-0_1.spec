@@ -2,10 +2,10 @@
 
 
 a = Analysis(
-    ['../main.py'],
+    ['../src/main.py'],
     pathex=[],
     binaries=[],
-    datas=[('../../engines/blonde_rabbit/blonde_rabbit.pth', 'engines/blonde_rabbit/')],
+    datas=[('../engines/blonde_rabbit/blonde_rabbit.pth', 'engines/blonde_rabbit/')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},

@@ -2,7 +2,7 @@
 
 
 a = Analysis(
-    ['../main.py'],
+    ['../src/main.py'],
     pathex=['/home/ogomi/projects/projectChessGod'],
     binaries=[],
     datas=[],
