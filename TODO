@@ -1,2 +1,2 @@
 improve the model
-evaluate in batches for speedup
+optimize search_root (not the evaluate, that is quite fast already)

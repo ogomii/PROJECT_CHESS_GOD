@@ -11,7 +11,7 @@ device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 training_config = TrainingConfig(
                     n_epochs=20, 
-                    batch_size=160, 
+                    batch_size=3200, 
                     learning_rate=0.001,
                     loss_fn=torch.nn.MSELoss(),
                     early_stop=True,

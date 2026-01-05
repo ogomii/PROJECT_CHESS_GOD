@@ -31,6 +31,10 @@ class TTEntry:
 
 transposition_table = {}
 
+# Batch evaluation globals
+pending_fens = []
+evaluated_scores = {}
+
 
 def get_tt_key(board):
     """Return a transposition key for `board`.
@@ -55,10 +59,22 @@ def get_tt_key(board):
     except Exception:
         return hash(board.fen())
 
-# ---- Search ----
-nodes = 0
-stop_search = False
-best_move_global = None
+def collect_positions(board: chess.Board, depth):
+    """Collect all positions that need evaluation at depth 0."""
+    global pending_fens
+    if depth == 0 or board.is_game_over():
+        fen = board.fen()
+        if fen not in evaluated_scores:
+            pending_fens.append(fen)
+        return
+    
+    moves = list(board.legal_moves)
+    moves.sort(key=lambda m: board.is_capture(m), reverse=True)
+    
+    for mv in moves:
+        board.push(mv)
+        collect_positions(board, depth-1)
+        board.pop()
 
 def negamax(board: chess.Board, depth, alpha, beta):
     global nodes, transposition_table
@@ -76,7 +92,7 @@ def negamax(board: chess.Board, depth, alpha, beta):
                 return beta
 
     if depth == 0 or board.is_game_over():
-        return evaluate(board)
+        return evaluated_scores.get(board.fen(), 0)  # Should be in evaluated_scores
 
     max_score = -9999999
     best_local = None
@@ -118,6 +134,16 @@ def search_root(board: chess.Board, max_depth, time_limit=None):
     for d in range(1, max_depth+1):
         if stop_search:
             break
+        # Collect positions for batch evaluation
+        pending_fens.clear()
+        evaluated_scores.clear()
+        collect_positions(board, d)
+        if pending_fens:
+            scores = evaluate(pending_fens)
+            for f, s in zip(pending_fens, scores):
+                evaluated_scores[f] = s
+        pending_fens.clear()
+        
         best_score = -9999999
         alpha = -10000000
         beta = 10000000
@@ -131,6 +157,7 @@ def search_root(board: chess.Board, max_depth, time_limit=None):
             moves.insert(0, tt_move)
         moves.sort(key=lambda m: board.is_capture(m), reverse=True)
 
+        # find best move at this depth
         for mv in moves:
             if stop_search: break
             board.push(mv)
@@ -165,7 +192,7 @@ def think_thread_fn(search_args):
     global board, stop_search, best_move_global
     stop_search = False
     best_move_global = None
-    depth = search_args.get("depth", 3)
+    depth = search_args.get("depth", 4)
     movetime = search_args.get("movetime", None)
     best = search_root(board, depth, time_limit=(movetime/1000.0 if movetime else None))
     if best is None:

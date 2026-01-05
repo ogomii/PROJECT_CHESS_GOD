@@ -35,27 +35,28 @@ piece_map = { # class 0 reserved for empty square
 def fen_to_tensor(fen):
     '''
     Convert FEN string to tensor representation.
+    Optimized using vectorized operations.
     example FEN: r1b2rk1/ppp2pbp/3q1np1/n3p1B1/2B5/1Q3N2/PP1N1PPP/3R1RK1 w - - 4 14 
     '''
     global piece_map
-    squares = 64
-    tensor = torch.zeros((squares, len(piece_map)))
-    tensor_idx = 0
-    for char in fen:
-        if char in ['/',' ']:
-            if char in [' ']:
-                # end of FEN board part
-                break
-            continue
-        elif char.isdigit():
-            for empty_idx in range(int(char)):
-                tensor[tensor_idx + empty_idx][piece_map["-"]] = 1
-            tensor_idx += int(char)  # adjust width index
-        else:
-            piece_type = piece_map.get(char)
-            if piece_type is not None:
-                tensor[tensor_idx][piece_type] = 1
-                tensor_idx += 1
-            else:
-                raise ValueError(f"Invalid character in FEN: {char}")
+    fen_board = fen.split(' ')[0]
+    
+    # Expand FEN to 64 characters
+    expanded = []
+    for char in fen_board:
+        if char.isdigit():
+            expanded.extend(['-'] * int(char))
+        elif char != '/':
+            expanded.append(char)
+    
+    if len(expanded) != 64:
+        raise ValueError(f"Invalid FEN: expanded to {len(expanded)} squares, expected 64")
+    
+    # Map to indices
+    indices = [piece_map[c] for c in expanded]
+    
+    # Create one-hot tensor
+    tensor = torch.zeros(64, len(piece_map))
+    tensor[torch.arange(64), indices] = 1
+    
     return tensor

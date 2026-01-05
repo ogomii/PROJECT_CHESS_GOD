@@ -26,6 +26,7 @@ PST = {
     chess.KING: [0]*64
 }
 
+# Legacy due to nn based engines requiring batch eval
 def evaluate(board: chess.Board):
     """Material + tiny PST. Positive means advantage for side to move."""
     score = 0
