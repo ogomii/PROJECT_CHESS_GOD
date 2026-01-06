@@ -62,7 +62,8 @@ def evaluate(fens):
         for batch in range(0, len(fens), BATCH_SIZE):
             batch_tensor = input_tensor[batch:batch + BATCH_SIZE]
             outputs = _model(batch_tensor)
-            scores.extend(outputs.squeeze(-1).tolist())  # assuming output is (batch, 1)
+            denormalized_outputs = outputs * _model.target_std + _model.target_mean
+            scores.extend(denormalized_outputs.squeeze(-1).tolist())  # assuming output is (batch, 1)
             del batch_tensor, outputs  # Free GPU memory immediately
     
     # Clean up GPU memory

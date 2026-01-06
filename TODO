@@ -1,2 +1,4 @@
 improve the model
+    make it deeper, not enough cognitive power as of now ?
+    overfitting, not generalizing well, add dropout, decreease learning rate
 optimize search_root (not the evaluate, that is quite fast already)

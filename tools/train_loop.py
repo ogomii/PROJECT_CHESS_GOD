@@ -9,6 +9,9 @@ def train_loop(model, training_config, trainloader, testloader, optim, device, w
     print(training_config)
     print(f"optim: {optim}")
     print(f"Device: {device}")
+    print(f"Model:")
+    for idx, m in enumerate(model.modules()):
+        print(idx, '->', m)
     with torch.no_grad():
         model.eval()
         test_loss = []
@@ -17,8 +20,8 @@ def train_loop(model, training_config, trainloader, testloader, optim, device, w
             logits = model(inputs)
             loss = training_config.loss_fn(logits, target)
             test_loss.append(loss.item())
-        train_loss_avg = sum(test_loss) / len(test_loss)  
-        print(f'Initialized network train_loss: {train_loss_avg}')
+        baseline_loss = sum(test_loss) / len(test_loss)  
+        print(f'Initialized network loss: {baseline_loss}')
         model.train()
 
     print(f'------Commencing training:------')
@@ -38,28 +41,34 @@ def train_loop(model, training_config, trainloader, testloader, optim, device, w
             epoch_loss.append(loss.item())
             optim.zero_grad()
             loss.backward()
+            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
             optim.step()
-        epoch_loss_avg = sum(epoch_loss) / len(epoch_loss) 
+        try:
+            epoch_loss_avg = sum(epoch_loss) / len(epoch_loss) 
+        except:
+            epoch_loss_avg = 0
         epoch_loss_avg_arr.append(epoch_loss_avg)
         writer.add_scalar('Loss/train', epoch_loss_avg, epoch)
 
         # check performance on eval data
-        if (epoch % 4 == 0) or (epoch == training_config.n_epochs-1):
-            model.eval()
-            test_loss = []
-            for i, data in enumerate(testloader, 0):
-                inputs, target = data[0].to(device), data[1].to(device)
-                logits = model(inputs)
-                test_loss.append(training_config.loss_fn(logits, target).item())
+        model.eval()
+        test_loss = []
+        for i, data in enumerate(testloader, 0):
+            inputs, target = data[0].to(device), data[1].to(device)
+            logits = model(inputs)
+            test_loss.append(training_config.loss_fn(logits, target).item())
+        try:
             test_loss_avg = sum(test_loss) / len(test_loss)          
-            writer.add_scalar('Loss/test', test_loss_avg, epoch)
-            print(f'epoch: {epoch} train_loss: {epoch_loss_avg}, val_loss: {test_loss_avg}')
-            model.train()
+        except:
+            test_loss_avg = 0
+        writer.add_scalar('Loss/test', test_loss_avg, epoch)
+        print(f'epoch: {epoch} train_loss: {epoch_loss_avg}, val_loss: {test_loss_avg}')
+        model.train()
         
         # early stopping
-        if training_config.early_stop and epoch > 5:
-            if min(epoch_loss_avg_arr[-5:-3]) < (epoch_loss_avg + 0.01):
-                print(f"Early stopping on epoch {epoch} due to current loss_avg: {epoch_loss_avg} compared to last 4: {epoch_loss_avg_arr[-5:-1]}")
+        if training_config.early_stop and epoch > training_config.patience:
+            if all(test_loss_avg >= epoch_loss_avg_arr[-training_config.patience:] for epoch_loss_avg_arr in [test_loss_avg] * training_config.patience):  # Simplified; track min val loss
+                print(f"Early stopping at epoch {epoch}")
                 break
     writer.close()
 

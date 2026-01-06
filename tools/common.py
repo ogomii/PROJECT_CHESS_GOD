@@ -13,6 +13,7 @@ class TrainingConfig:
                 batch_size=16, 
                 learning_rate=0.01, 
                 loss_fn=None,
+                patience=10,
                 early_stop=True,
                 model_save_path='model.pth'
                 ):
@@ -20,6 +21,7 @@ class TrainingConfig:
         self.batch_size: int = batch_size
         self.learning_rate: float = learning_rate
         self.loss_fn = loss_fn 
+        self.patience = patience
         self.early_stop: bool = early_stop
         self.model_save_path: str = model_save_path
 

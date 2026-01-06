@@ -7,6 +7,34 @@ class Config:
     squares = 64
     input_classes = 13 # 12 pieces + empty
     d_model = 256  # example output size
+    hidden_layers = 4
+
+class MLPLayer(torch.nn.Module):
+    def __init__(self, d_model_in, d_model_out):
+        super(MLPLayer, self).__init__()
+        self.l1 = nn.Linear(d_model_in, d_model_out)
+        self.ln1 = nn.LayerNorm(d_model_out)
+        self.relu = nn.GELU()
+    
+    def forward(self,x):
+        x = self.l1(x)
+        x = self.ln1(x)
+        out = self.relu(x)
+        return out
+
+
+class MLP(torch.nn.Module):
+    def __init__(self, config):
+        super(MLP, self).__init__()
+        self.config = config
+        self.layers = nn.Sequential(*[MLPLayer(self.config.d_model, self.config.d_model) for _ in range(self.config.hidden_layers-1)])
+        self.last_layer = MLPLayer(self.config.d_model, self.config.d_model)
+        self.last_layer_norm = nn.LayerNorm(self.config.d_model)
+    
+    def forward(self, x) -> torch.Tensor:
+        x = self.layers(x)
+        # no activation on last layer to allow for better symmetry in evaluation
+        return self.last_layer(self.last_layer_norm(x))
 
 class BlondeRabbit(torch.nn.Module):
     '''
@@ -16,16 +44,28 @@ class BlondeRabbit(torch.nn.Module):
     (64,d), as it has a small outer dimension can easily be processed by a transformer network
     '''
 
-    def __init__(self, config):
+    def __init__(self, config, target_mean=None, target_std=None):
         super(BlondeRabbit, self).__init__()
         self.config = config
         # embedding layer to convert (13,) to (d_model,)
         self.embed = nn.Linear(self.config.input_classes, self.config.d_model)
+        self.mlp = MLP(self.config)
         self.out = nn.Linear(self.config.d_model * self.config.squares, 1) # regression output
 
+        if target_mean is not None and target_std is not None:
+            self.register_buffer('target_mean', torch.tensor(target_mean, dtype=torch.float32))
+            self.register_buffer('target_std', torch.tensor(target_std, dtype=torch.float32))
+        else:
+            self.register_buffer('target_mean', torch.tensor(0.0))  # Default/placeholder
+            self.register_buffer('target_std', torch.tensor(1.0))
+
     def forward(self, x):
-        N, T, _ = x.shape
-        x = self.embed(x) # (N, T, d_model)
-        x = torch.flatten(x, start_dim=1) # (N, T*d_model)
-        x = self.out(x)**3 # (N, 1)
-        return x
+        N, S, _ = x.shape
+        x = self.embed(x) # (N, S, d_model)
+
+        x = x + self.mlp(x)
+
+        x = torch.flatten(x, start_dim=1) # (N, S*d_model)
+        # linear output is later denormalized using dataset norm and std
+        out = self.out(x) # (N, 1)
+        return out
