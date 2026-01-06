@@ -22,6 +22,8 @@ EXACT = 0
 ALPHA = 1
 BETA = 2
 
+MAX_DEPTH = 3
+
 class TTEntry:
     def __init__(self, depth, score, flag, move):
         self.depth = depth
@@ -192,7 +194,7 @@ def think_thread_fn(search_args):
     global board, stop_search, best_move_global
     stop_search = False
     best_move_global = None
-    depth = search_args.get("depth", 4)
+    depth = search_args.get("depth", MAX_DEPTH)
     movetime = search_args.get("movetime", None)
     best = search_root(board, depth, time_limit=(movetime/1000.0 if movetime else None))
     if best is None:

@@ -27,7 +27,7 @@ shit out :)
 2. Inspect the engine-specific README in `engines/<engine-name>/README.md` for setup details.
 3. Compile an engine with UCI protocol:
    ```bash
-   pyinstaller --distpath ./engines/blonde_rabbit/ ./src/specs/Blonde_Rabbit-0_1.spec 
+   pyinstaller --distpath ./engines/blonde_rabbit/ ./specs/Blonde_Rabbit-0_1.spec 
    ```
 4. Use JCchess to load a UCI-compatible engine (see `engines/README.md`).
 

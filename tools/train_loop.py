@@ -5,6 +5,7 @@ def save_model(model, path):
     print(f"Saving model to {path}...")
     torch.save(model.state_dict(), path)
 
+
 def train_loop(model, training_config, trainloader, testloader, optim, device, writer):
     print(training_config)
     print(f"optim: {optim}")
@@ -12,20 +13,26 @@ def train_loop(model, training_config, trainloader, testloader, optim, device, w
     print(f"Model:")
     for idx, m in enumerate(model.modules()):
         print(idx, '->', m)
-    with torch.no_grad():
+
+    def check_accuracy(model, dataloader, acc_type='test'):
         model.eval()
-        test_loss = []
-        for i, data in enumerate(trainloader, 0):
-            inputs, target = data[0].to(device), data[1].to(device)
-            logits = model(inputs)
-            loss = training_config.loss_fn(logits, target)
-            test_loss.append(loss.item())
-        baseline_loss = sum(test_loss) / len(test_loss)  
-        print(f'Initialized network loss: {baseline_loss}')
+        with torch.no_grad():
+            # check accuracy on data
+            total_loss = 0
+            for data in dataloader:
+                input, target = data[0].to(device), data[1].to(device)
+                logits = model(input)
+                loss = training_config.loss_fn(logits, target)
+                total_loss += loss.item()
+            print(f'Avg loss of the network on {acc_type} data: {total_loss / len(dataloader)}')
         model.train()
+    print(f"Baseline loss:")
+    check_accuracy(model, trainloader, 'train')
+    check_accuracy(model, testloader, 'test')
 
     print(f'------Commencing training:------')
     epoch_loss_avg_arr = []
+    test_loss_avg_arr = []
     model.train()
     for epoch in range(training_config.n_epochs):  # loop over the dataset multiple times
         epoch_loss = []
@@ -61,30 +68,19 @@ def train_loop(model, training_config, trainloader, testloader, optim, device, w
             test_loss_avg = sum(test_loss) / len(test_loss)          
         except:
             test_loss_avg = 0
+        test_loss_avg_arr.append(test_loss_avg)
         writer.add_scalar('Loss/test', test_loss_avg, epoch)
         print(f'epoch: {epoch} train_loss: {epoch_loss_avg}, val_loss: {test_loss_avg}')
         model.train()
         
         # early stopping
         if training_config.early_stop and epoch > training_config.patience:
-            if all(test_loss_avg >= epoch_loss_avg_arr[-training_config.patience:] for epoch_loss_avg_arr in [test_loss_avg] * training_config.patience):  # Simplified; track min val loss
+            if all(test_loss_avg >= prev for prev in test_loss_avg_arr[-training_config.patience:]):
                 print(f"Early stopping at epoch {epoch}")
                 break
     writer.close()
 
-    def check_accuracy(model, dataloader, acc_type='test'):
-        model.eval()
-        with torch.no_grad():
-            # check accuracy on data
-            total_loss = 0
-            for data in dataloader:
-                input, target = data[0].to(device), data[1].to(device)
-                logits = model(input)
-                loss = training_config.loss_fn(logits, target)
-                total_loss += loss.item()
-            print(f'Avg loss of the network on {acc_type} data: {total_loss / len(dataloader)}')
-        model.train()
-
+    print(f"Final loss:")
     check_accuracy(model, trainloader, 'train')
     check_accuracy(model, testloader, 'test')
     save_model(model, training_config.model_save_path)
