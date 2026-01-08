@@ -17,7 +17,7 @@ training_config = TrainingConfig(
                     loss_fn=torch.nn.MSELoss(),
                     patience=5,
                     early_stop=True,
-                    weight_decay=1e-3,
+                    weight_decay=1e-4,
                     model_save_path=f'engines/blonde_rabbit/weights/blonde_rabbit_{datetime.datetime.now().strftime("%Y%m%d_%H%M%S")}.pth'
                     )
 

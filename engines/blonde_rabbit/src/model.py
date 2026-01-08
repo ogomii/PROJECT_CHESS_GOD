@@ -6,35 +6,47 @@ class Config:
     squares_width = 8
     squares = 64
     input_classes = 13 # 12 pieces + empty
-    d_model = 256  # example output size
-    hidden_layers = 4
+    d_model = 128  # example output size
+    hidden_layers = 2
+    dropout = 0.2
 
 class MLPLayer(torch.nn.Module):
-    def __init__(self, d_model_in, d_model_out):
+    def __init__(self, config):
         super(MLPLayer, self).__init__()
-        self.l1 = nn.Linear(d_model_in, d_model_out)
-        self.ln1 = nn.LayerNorm(d_model_out)
+        self.l1 = nn.Linear(config.d_model, 2*config.d_model)
+        self.ln1 = nn.LayerNorm(2*config.d_model)
         self.relu = nn.GELU()
+        self.drop = nn.Dropout(config.dropout)
+        self.l2 = nn.Linear(2*config.d_model, config.d_model)
     
     def forward(self,x):
         x = self.l1(x)
         x = self.ln1(x)
-        out = self.relu(x)
+        x = self.relu(x)
+        x = self.drop(x)
+        out = self.l2(x)
         return out
+
+
+class Block(torch.nn.Module):
+    def __init__(self, config):
+        super(Block, self).__init__()
+        self.layer = MLPLayer(config)
+    
+    def forward(self, x):
+        return self.layer(x)
 
 
 class MLP(torch.nn.Module):
     def __init__(self, config):
         super(MLP, self).__init__()
         self.config = config
-        self.layers = nn.Sequential(*[MLPLayer(self.config.d_model, self.config.d_model) for _ in range(self.config.hidden_layers-1)])
-        self.last_layer = MLPLayer(self.config.d_model, self.config.d_model)
-        self.last_layer_norm = nn.LayerNorm(self.config.d_model)
+        self.layers = nn.Sequential(*[Block(self.config) for _ in range(self.config.hidden_layers)])
     
     def forward(self, x) -> torch.Tensor:
-        x = self.layers(x)
-        # no activation on last layer to allow for better symmetry in evaluation
-        return self.last_layer(self.last_layer_norm(x))
+        out = self.layers(x)
+        return out
+
 
 class BlondeRabbit(torch.nn.Module):
     '''
