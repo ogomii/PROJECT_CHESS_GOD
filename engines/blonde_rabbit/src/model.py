@@ -8,7 +8,7 @@ class Config:
     input_classes = 13 # 12 pieces + empty
     d_model = 128  # example output size
     hidden_layers = 2
-    dropout = 0.2
+    dropout = 0.0
 
 class MLPLayer(torch.nn.Module):
     def __init__(self, config):

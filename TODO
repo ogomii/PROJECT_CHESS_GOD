@@ -2,4 +2,5 @@ improve the model
     make it deeper, not enough cognitive power as of now ?
     overfitting, not generalizing well, add dropout, decreease learning rate
     why is inital loss of test data always lower than train data? is it because of normalization? should it be like that?
+    how to calculate mean and std of only train data if everytinh is in .db
 optimize search_root (not the evaluate, that is quite fast already)

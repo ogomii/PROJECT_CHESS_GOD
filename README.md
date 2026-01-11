@@ -8,7 +8,6 @@ shit out :)
 
 ## Highlights
 
-- Dataset: Lichess 1M games — https://www.kaggle.com/datasets/aapohermankoskinen/lichess-1-million-chess-games
 - Dataset: NNUE stockfish challange, almost 2 million games — https://www.kaggle.com/competitions/train-your-own-stockfish-nnue/data?select=test.csv
 - Uses JCchess (https://github.com/johncheetham/jcchess) for game UI, PGN handling and testing.
 - Engines communicate via UCI (Universal Chess Interface) — engines here include a UCI translation layer.
@@ -24,12 +23,25 @@ shit out :)
 ### Quick start (high level)
 
 1. Clone the repo.
-2. Inspect the engine-specific README in `engines/<engine-name>/README.md` for setup details.
-3. Compile an engine with UCI protocol:
+2. Look at Data preprocessing below
+3. Inspect the engine-specific README in `engines/<engine-name>/README.md` for setup details.
+4. Compile an engine with UCI protocol:
    ```bash
    pyinstaller --distpath ./engines/blonde_rabbit/ ./specs/Blonde_Rabbit-0_1.spec 
    ```
-4. Use JCchess to load a UCI-compatible engine (see `engines/README.md`).
+5. Use JCchess to load a UCI-compatible engine (see `engines/README.md`).
+
+### Data preprocessing
+- Turns out that NNUE dataset is heavily imbalanced, for example a few simple statistics for train and test:
+
+| Dataset | Count     | Mean      | Std       | Min    |
+|---------|-----------|-----------|-----------|--------|
+| Train   | 1,979,383 | 18.06854  | 619.0980  | -6,462 |
+| Test    | 1,000     | 24.00200  | 14.60833  | 3      |
+
+- You can look it up more in data analysis secion under data/nnue.
+- To counter that we combine all data into one, and create train,val,test spilts manually
+- We also preprocess it saving FENs as tensors in numpy memmory objects for quick loading 
 
 ### Example local workflow
 

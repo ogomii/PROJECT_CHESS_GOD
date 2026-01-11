@@ -22,10 +22,10 @@ training_config = TrainingConfig(
                     )
 
 print("Loading testset...")
-test_dataset = ChessDataset('data/nnue/test')
+test_dataset = ChessDataset('data/nnue/', 'test')
 print("Loading trainset...")
 # train_dataset = ChessDataset('data/nnue/test') # temporary for quick testing
-train_dataset = ChessDataset('data/nnue/train')
+train_dataset = ChessDataset('data/nnue/', 'train')
 # normalize dataset to stabilize training, denormalize predictions on inference
 train_targets = train_dataset.targets  # np array
 target_mean = np.mean(train_targets)
