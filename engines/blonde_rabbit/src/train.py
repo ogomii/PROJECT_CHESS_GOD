@@ -22,21 +22,21 @@ training_config = TrainingConfig(
                     )
 
 print("Loading testset...")
-test_dataset = ChessDataset('data/nnue/', 'test')
+val_dataset = ChessDataset('data/nnue/', 'val')
 print("Loading trainset...")
 # train_dataset = ChessDataset('data/nnue/test') # temporary for quick testing
 train_dataset = ChessDataset('data/nnue/', 'train')
 # normalize dataset to stabilize training, denormalize predictions on inference
-train_targets = train_dataset.targets  # np array
+train_targets = train_dataset.targets[train_dataset.indices]
 target_mean = np.mean(train_targets)
 target_std = np.std(train_targets)
-print(f"Target mean: {target_mean}, std: {target_std}")
+print(f"Target mean: {target_mean}, std: {target_std}, n_elements: {len(train_targets)}")
 train_dataset.normalize(target_mean, target_std)
-test_dataset.normalize(target_mean, target_std)
+val_dataset.normalize(target_mean, target_std)
 
 print("Creating batched dataloaders...")
-trainloader = DataLoader(train_dataset, batch_size=training_config.batch_size, shuffle=True, num_workers=2)
-testloader = DataLoader(test_dataset, batch_size=training_config.batch_size, shuffle=False, num_workers=2)
+train_loader = DataLoader(train_dataset, batch_size=training_config.batch_size, shuffle=True, num_workers=2)
+val_loader = DataLoader(val_dataset, batch_size=training_config.batch_size, shuffle=False, num_workers=2)
 
 print("Creating model...")
 m = BlondeRabbit(Config, target_mean=train_dataset.target_mean, target_std=train_dataset.target_std)
@@ -51,4 +51,4 @@ optim = torch.optim.AdamW(
 writer = SummaryWriter()
 
 print("Starting training loop...")
-train_loop(model, training_config, trainloader, testloader, optim, device, writer)
+train_loop(model, training_config, train_loader, val_loader, optim, device, writer)

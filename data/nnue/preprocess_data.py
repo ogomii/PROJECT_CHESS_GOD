@@ -3,6 +3,7 @@ import torch
 import numpy as np
 import sys
 import os
+import json
 from random import randrange
 sys.path.append('.')
 from tools.common import fen_to_tensor
@@ -75,7 +76,7 @@ def csv_to_npy(path):
     # Generate split indices (low memory)
     all_indices = np.arange(total_rows)
     np.random.shuffle(all_indices)  # Shuffle for random split
-    test_val_size = int(total_rows * 0.1)
+    test_val_size = int(total_rows * 0.1) # 5% for test and 5% for eval
     test_size = test_val_size // 2
     val_size = test_val_size - test_size
     train_size = total_rows - test_val_size
@@ -88,6 +89,15 @@ def csv_to_npy(path):
     np.save(os.path.join(path, "test_indices.npy"), test_indices)
     np.save(os.path.join(path, "val_indices.npy"), val_indices)
     np.save(os.path.join(path, "train_indices.npy"), train_indices)
+    
+    # Save shape metadata
+    metadata = {
+        "input_shape": list(input_shape),
+        "target_shape": list(target_shape),
+        "total_rows": int(total_rows)
+    }
+    with open(os.path.join(path, "metadata.json"), "w") as f:
+        json.dump(metadata, f, indent=2)
     
     print(f"Data processed: {total_rows} rows. Full data saved as memmap. Indices saved for splits.")
 

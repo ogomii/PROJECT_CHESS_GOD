@@ -6,7 +6,7 @@ def save_model(model, path):
     torch.save(model.state_dict(), path)
 
 
-def train_loop(model, training_config, trainloader, testloader, optim, device, writer):
+def train_loop(model, training_config, train_loader, val_loader, optim, device, writer):
     print(training_config)
     print(f"optim: {optim}")
     print(f"Device: {device}")
@@ -14,7 +14,7 @@ def train_loop(model, training_config, trainloader, testloader, optim, device, w
     for idx, m in enumerate(model.modules()):
         print(idx, '->', m)
 
-    def check_accuracy(model, dataloader, acc_type='test'):
+    def check_accuracy(model, dataloader, acc_type='val'):
         model.eval()
         with torch.no_grad():
             # check accuracy on data
@@ -27,19 +27,19 @@ def train_loop(model, training_config, trainloader, testloader, optim, device, w
             print(f'Avg loss of the network on {acc_type} data: {total_loss / len(dataloader)}')
         model.train()
     print(f"Baseline loss:")
-    check_accuracy(model, trainloader, 'train')
-    check_accuracy(model, testloader, 'test')
+    check_accuracy(model, train_loader, 'train')
+    check_accuracy(model, val_loader, 'val')
 
     print(f'------Commencing training:------')
     epoch_loss_avg_arr = []
-    test_loss_avg_arr = []
+    val_loss_avg_arr = []
     model.train()
     for epoch in range(training_config.n_epochs):  # loop over the dataset multiple times
         epoch_loss = []
         print(f"Running epoch: {epoch}")
 
         # train on training data
-        for i, data in enumerate(trainloader, 0):
+        for i, data in enumerate(train_loader, 0):
             inputs, target = data[0].to(device), data[1].to(device)
             
             logits = model(inputs)
@@ -59,28 +59,28 @@ def train_loop(model, training_config, trainloader, testloader, optim, device, w
 
         # check performance on eval data
         model.eval()
-        test_loss = []
-        for i, data in enumerate(testloader, 0):
+        val_loss = []
+        for i, data in enumerate(val_loader, 0):
             inputs, target = data[0].to(device), data[1].to(device)
             logits = model(inputs)
-            test_loss.append(training_config.loss_fn(logits, target).item())
+            val_loss.append(training_config.loss_fn(logits, target).item())
         try:
-            test_loss_avg = sum(test_loss) / len(test_loss)          
+            val_loss_avg = sum(val_loss) / len(val_loss)          
         except:
-            test_loss_avg = 0
-        test_loss_avg_arr.append(test_loss_avg)
-        writer.add_scalar('Loss/test', test_loss_avg, epoch)
-        print(f'epoch: {epoch} train_loss: {epoch_loss_avg}, val_loss: {test_loss_avg}')
+            val_loss_avg = 0
+        val_loss_avg_arr.append(val_loss_avg)
+        writer.add_scalar('Loss/val', val_loss_avg, epoch)
+        print(f'epoch: {epoch} train_loss: {epoch_loss_avg}, val_loss: {val_loss_avg}')
         model.train()
         
         # early stopping
         if training_config.early_stop and epoch > training_config.patience:
-            if all(test_loss_avg >= prev for prev in test_loss_avg_arr[-training_config.patience:]):
+            if all(val_loss_avg >= prev for prev in val_loss_avg_arr[-training_config.patience:]):
                 print(f"Early stopping at epoch {epoch}")
                 break
     writer.close()
 
     print(f"Final loss:")
-    check_accuracy(model, trainloader, 'train')
-    check_accuracy(model, testloader, 'test')
+    check_accuracy(model, train_loader, 'train')
+    check_accuracy(model, val_loader, 'val')
     save_model(model, training_config.model_save_path)

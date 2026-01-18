@@ -1,0 +1,10 @@
+{
+  "input_shape": [
+    64,
+    13
+  ],
+  "target_shape": [
+    1
+  ],
+  "total_rows": 1980383
+}

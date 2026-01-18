@@ -1,6 +1,7 @@
 import torch
 from torch.utils.data import Dataset
 import numpy as np
+import json
 
 class ChessDataset(Dataset):
     def __init__(
@@ -11,19 +12,28 @@ class ChessDataset(Dataset):
         target_std=1.0,
     ):
         # Load indices for this split
-        self.indices = np.load(path + npy_filt_prefix + "_indicies.npy", mmap_mode='r')
+        self.indices = np.load(path + npy_filt_prefix + "_indices.npy", mmap_mode='r')
 
-        # Memory-map the full datasets
+        # Load shape metadata
+        with open(path + "metadata.json", "r") as f:
+            metadata = json.load(f)
+        input_shape = tuple(metadata["input_shape"])
+        target_shape = tuple(metadata["target_shape"])
+        total_rows = metadata["total_rows"]
+
+        # Memory-map the full datasets with correct shape
         self.inputs = np.memmap(
-            path+ "full_inputs.dat",
+            path + "full_inputs.dat",
             dtype=np.float32,
             mode='r',
+            shape=(total_rows,) + input_shape
         )
 
         self.targets = np.memmap(
             path + "full_targets.dat",
             dtype=np.float32,
             mode='r',
+            shape=(total_rows,) + target_shape
         )
 
         self.target_mean = target_mean
