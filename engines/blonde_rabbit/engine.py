@@ -1,12 +1,9 @@
 import chess
-import chess.polyglot
 from tools.common import EngineDescpriptor, fen_to_tensor
 from engines.blonde_rabbit.src.model import BlondeRabbit, Config
 import torch
-import random as rnd
 import sys
 import os
-import concurrent.futures
 
 # Global model to avoid reloading
 _model = None

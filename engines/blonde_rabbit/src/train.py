@@ -21,9 +21,9 @@ training_config = TrainingConfig(
                     model_save_path=f'engines/blonde_rabbit/weights/blonde_rabbit_{datetime.datetime.now().strftime("%Y%m%d_%H%M%S")}.pth'
                     )
 
-print("Loading testset...")
+print("Loading eval set...")
 val_dataset = ChessDataset('data/nnue/', 'val')
-print("Loading trainset...")
+print("Loading train set...")
 # train_dataset = ChessDataset('data/nnue/test') # temporary for quick testing
 train_dataset = ChessDataset('data/nnue/', 'train')
 # normalize dataset to stabilize training, denormalize predictions on inference
