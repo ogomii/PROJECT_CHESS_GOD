@@ -10,7 +10,8 @@ class Config:
     hidden_layers = 2
     dropout = 0.0
 
-class MLPLayer(torch.nn.Module):
+
+class MLPLayer(nn.Module):
     def __init__(self, config):
         super(MLPLayer, self).__init__()
         self.l1 = nn.Linear(config.d_model, 2*config.d_model)
@@ -19,7 +20,7 @@ class MLPLayer(torch.nn.Module):
         self.drop = nn.Dropout(config.dropout)
         self.l2 = nn.Linear(2*config.d_model, config.d_model)
     
-    def forward(self,x):
+    def forward(self, x) -> torch.Tensor:
         x = self.l1(x)
         x = self.ln1(x)
         x = self.relu(x)
@@ -28,16 +29,16 @@ class MLPLayer(torch.nn.Module):
         return out
 
 
-class Block(torch.nn.Module):
+class Block(nn.Module):
     def __init__(self, config):
         super(Block, self).__init__()
         self.layer = MLPLayer(config)
     
-    def forward(self, x):
+    def forward(self, x) -> torch.Tensor:
         return self.layer(x)
 
 
-class MLP(torch.nn.Module):
+class MLP(nn.Module):
     def __init__(self, config):
         super(MLP, self).__init__()
         self.config = config
@@ -48,7 +49,7 @@ class MLP(torch.nn.Module):
         return out
 
 
-class BlondeRabbit(torch.nn.Module):
+class BlondeRabbit(nn.Module):
     '''
     each field represented by 13 classes (13 binary inputs as there is 6 white and 6 black pieces + none)
     input matrix (64, 13)
